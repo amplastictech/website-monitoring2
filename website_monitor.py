@@ -16,7 +16,7 @@ EMAIL_RECEIVER = os.environ.get("EMAIL_RECEIVER")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 USERNAME = "eggleton"
-PASSWORD = os.environ.get('WEBSITE-PASSWORD')
+PASSWORD = "x0U99s#6"
 
 def send_email(subject, body):
     msg = MIMEText(body)
