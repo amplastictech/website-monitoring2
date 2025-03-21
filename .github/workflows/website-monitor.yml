@@ -2,8 +2,8 @@ name: Website Monitor
 
 on:
   schedule:
-    - cron: '* * * * *'  # Runs every minute
-  workflow_dispatch:     # Allows manual triggering
+    - cron: '* * * * *'  # Runs every minute (GitHub minimum is 5 minutes)
+  workflow_dispatch:
 
 jobs:
   monitor-website:
@@ -17,51 +17,26 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Cache Firefox and Geckodriver
-        uses: actions/cache@v4
-        with:
-          path: |
-            /opt/firefox
-            /usr/local/bin/geckodriver
-          key: ${{ runner.os }}-firefox-geckodriver-${{ hashFiles('**/website-monitor.yml') }}
-
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libgtk-3-0 libxtst6 libx11-xcb1 libdbus-glib-1-2
+          sudo apt-get install -y firefox xvfb libgtk-3-0 libxtst6 libx11-xcb1 libdbus-glib-1-2
+
+      - name: Install Geckodriver
+        run: |
+          sudo apt-get install -y firefox-geckodriver
+          geckodriver --version
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install selenium==4.18.1
 
-      - name: Install Firefox
+      - name: Verify installations
         run: |
-          if [ ! -d "/opt/firefox" ]; then
-            wget -O firefox.tar.bz2 "https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US"
-            sudo mkdir -p /opt/firefox
-            sudo tar -xjf firefox.tar.bz2 -C /opt/firefox --strip-components=1
-            rm firefox.tar.bz2
-          fi
-          sudo ln -sf /opt/firefox/firefox /usr/bin/firefox
-
-      - name: Install Geckodriver
-        run: |
-          if [ ! -f "/usr/local/bin/geckodriver" ]; then
-            GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r '.tag_name')
-            wget -O geckodriver.tar.gz "https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz"
-            sudo tar -xzf geckodriver.tar.gz -C /usr/local/bin/
-            sudo chmod +x /usr/local/bin/geckodriver
-            rm geckodriver.tar.gz
-          fi
+          firefox --version
+          geckodriver --version
+          python -c "import selenium; print(f'Selenium version: {selenium.__version__}')"
 
       - name: Run website monitor
         env:
