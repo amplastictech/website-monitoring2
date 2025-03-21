@@ -34,6 +34,7 @@ def send_email(subject, body):
         print(f"Failed to send email: {e}")
 
 def setup_driver():
+    os.environ["DISPLAY"] = ":99"  # For headless compatibility
     options = webdriver.FirefoxOptions()
     options.add_argument("--headless")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0")
